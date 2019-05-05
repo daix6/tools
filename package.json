@@ -1,0 +1,23 @@
+{
+  "name": "tools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "package.json",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" & exit 1",
+    "serve": "npx ecstatic --host 127.0.0.1 --port 8888"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/daix6/tools.git"
+  },
+  "author": "Shawn Dai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daix6/tools/issues"
+  },
+  "homepage": "https://github.com/daix6/tools#readme",
+  "devDependencies": {
+    "ecstatic": "^4.1.2"
+  }
+}

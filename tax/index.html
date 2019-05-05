@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>新个人所得税计算器</title>
+  <link rel="stylesheet" href="../vendor/reset.css">
+</head>
+<body>
+  <style type="text/css">
+    #tax-caculator {
+      margin: 20px;
+    }
+
+    table {
+      border-collapse: collapse;
+      border: none;
+      table-layout:fixed;
+    }
+
+    th, td {
+      padding: 2px 8px 4px;
+      border: 1px solid #ccc;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    th .text-overflow, td .text-overflow {
+      width: 100%;
+      display: inline-block;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    table tr:first-child th {
+      border-top: 0;
+    }
+
+    table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    table tr td:first-child,
+    table tr th:first-child {
+      border-left: 0;
+    }
+
+    table tr td:last-child,
+    table tr th:last-child {
+      border-right: 0;
+    }
+
+    table table {
+      width: 100%;
+    }
+
+    table table td, table table th {
+      border-top: none;
+    }
+
+    td > input {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid teal;
+    }
+
+    .table-in-td {
+      padding: 0;
+    }
+  </style>
+  <div id="tax-caculator">
+    <table>
+      <colgroup>
+        <col style="5%">
+        <col span="3" style="width: 7%">
+        <col style="width: 39%">
+        <col span="5" style="width: 7%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Salary</th>
+          <th>Subsidy</th>
+          <th>Bonus</th>
+          <th class="table-in-td">
+            <table>
+              <colgroup>
+                <col span="4" style="width: 25%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th colspan="4">Social Insurance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="text-overflow">Medical</span></td>
+                  <td><span class="text-overflow">Unemployment</span></td>
+                  <td><span class="text-overflow">Pension</span></td>
+                  <td><span class="text-overflow">Total</span></td>
+                </tr>
+              </thead>
+            </table>
+          </th>
+          <th>Provindent Fund</th>
+          <th>Basic Exemption</th>
+          <th>Special Exemption</th>
+          <th>Taxable Income</th>
+      <th>Personal Income Tax</th>
+        </tr>
+      </thead>
+      <tbody v-for="(item, index) in list" :key="index">
+        <td>{{ index === 0 ? '12' : index }}</td>
+        <td><input v-model.trim="item.salary" type="text" @input="change(index, 'salary', $event)"/></td>
+        <td><input v-model.trim="item.subsidy" type="text" @input="change(index, 'subsidy', $event)"/></td>
+        <td><input v-model.trim="item.bonus" type="text" @input="change(index, 'bonus', $event)"/></td>
+        <td class="table-in-td">
+          <table>
+            <colgroup>
+              <col span="4" style="width: 25%">
+            </colgroup>
+            <tbody>
+              <tr>
+                <td><input v-model.trim="item.medical_insurance" type="text" @input="change(index, 'medical_insurance', $event)"/></td>
+                <td><input v-model.trim="item.unemployment_insurance" type="text" @input="change(index, 'unemployment_insurance', $event)"/></td>
+                <td><input v-model.trim="item.pension_insurance" type="text" @input="change(index, 'pension_insurance', $event)"/></td>
+                <td><span class="text-overflow">{{ +item.medical_insurance + item.unemployment_insurance + item.pension_insurance }}</span></td>
+              </tr>
+            </thead>
+          </table>
+        </td>
+        <td><input v-model.trim="item.provident_fund" type="text" @input="change(index, 'provident_fund', $event)" /></td>
+        <td><input v-model.trim="item.basic_exemption" type="text" @input="change(index, 'basic_exemption', $event)" /></td>
+        <td><input v-model.trim="item.special_exemption" type="text" @input="change(index, 'special_exemption', $event)" /></td>
+        <td><span class="text-overflow">{{ item.taxable_income }}</span></td>
+        <td><span class="text-overflow">{{ item.personal_income_tax }}</span></td>
+      </tbody>
+    </table>
+  </div>
+  <script src="../vendor/vue.js"></script>
+  <script type="text/javascript">
+    new Vue({
+      el: '#tax-caculator',
+      data() {
+        return {
+          list: [],
+        };
+      },
+      created() {
+        this.list = new Array(12).fill().map(month => {
+          return {
+            salary: '',
+            subsidy: '',
+            bonus: '',
+            medical_insurance: '',
+            unemployment_insurance: '',
+            pension_insurance: '',
+            provident_fund: '',
+            basic_exemption: 5000,
+            special_exemption: '',
+            personal_income_tax: '',
+            total_income: 0,
+            total_exemption: 0,
+          };
+        });
+      },
+      methods: {
+        change(index, key, $event) {
+          if (['bonus'].indexOf(key) <= 0) {
+            for (let i = index + 1; i < this.list.length; i++) {
+              this.list[i][key] = +this.list[index][key];
+            }
+          }
+
+          for (let i = 0; i < this.list.length; i++) {
+            this.getTaxableIncome(this.list[i], i);
+            this.getTax(this.list[i], i);
+          }
+        },
+        getTaxableIncome(item, index) {
+          this.list[index].total_income = +item.salary + +item.subsidy + +item.bonus;
+          this.list[index].total_exemption = +item.medical_insurance + +item.unemployment_insurance + +item.pension_insurance + +item.provident_fund + +item.basic_exemption + +item.special_exemption;
+        },
+        getTax(item, index) {
+          let taxableIncome = 0;
+          let prevTaxTotal = 0;
+          for (let i = 0; i <= index ; i++) {
+            taxableIncome += this.list[i].total_income - this.list[i].total_exemption;
+            if (i !== index) prevTaxTotal += +this.list[i].personal_income_tax;
+          }
+
+          let tax;
+          if (taxableIncome < 0) {
+            tax = 0;
+          } else if (taxableIncome <= 36000) {
+            tax = taxableIncome * 0.03;
+          } else if (taxableIncome <= 144000) {
+            tax = taxableIncome * 0.1 - 2520;
+          } else if (taxableIncome <= 300000) {
+            tax = taxableIncome * 0.2 - 16920;
+          } else if (taxableIncome <= 420000) {
+            tax = taxableIncome * 0.25 - 31920;
+          } else if (taxableIncome <= 660000) {
+            tax = taxableIncome * 0.3 - 52920;
+          } else if (taxableIncome <= 85920) {
+            tax = taxableIncome * 0.35 - 181920;
+          } else {
+            tax = taxableIncome * 0.45 - 181920;
+          }
+
+          this.list[index].personal_income_tax = (tax - prevTaxTotal).toFixed(1);
+        },
+      }
+    });
+  </script>
+</body>
+</html>
